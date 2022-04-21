@@ -4,8 +4,8 @@ This is a (very) simple implementation of the fakebooks mock app demonstrated on
 
 This inteded to be used to compare from a fairly standard client-rendered app. The sister repo to this one can be found at [kentcdodds/fakebooks-cra](https://github.com/kentcdodds/fakebooks-cra).
 
-- [Fakebooks Remix Production Deploy](https://fakebooks-remix-1b16.fly.dev) - Deployed on Fly in the Dallas Region
-- [Fakebooks CRA Production Deploy](https://fakebooks-cra.netlify.app) - Deployed on Netlify's global CDN
+- [Fakebooks Remix Production Deploy](https://fakebooks-remix-1b16.fly.dev/sales/invoices) - Deployed on Fly in the Dallas Region
+- [Fakebooks CRA Production Deploy](https://fakebooks-cra.netlify.app/sales/invoices) - Deployed on Netlify's global CDN
 
 The main objective of this comparison (currently) is to demonstrate the UX and DX difference between the two approaches in regards to data loading. Test out the initial page load as well as switching between different pages.
 
