@@ -45,7 +45,8 @@ function asUTC(date: Date) {
 const fromNow = (days: number) =>
   asUTC(new Date(new Date().getTime() + 1000 * 60 * 60 * 24 * days));
 
-function getInvoices(): Array<Invoice> {
+async function getInvoices(): Promise<Array<Invoice>> {
+  await new Promise((resolve) => setTimeout(resolve, Math.random() * 40 + 60));
   return [
     {
       id: "ci3ftpj10f8",
@@ -99,7 +100,8 @@ function getInvoices(): Array<Invoice> {
 }
 
 export async function getInvoiceListItems() {
-  return getInvoices().map((i) => ({
+  const invoices = await getInvoices();
+  return invoices.map((i) => ({
     id: i.id,
     total: i.lineItems.reduce((sum, item) => sum + item.amount, 0),
     number: i.number,
@@ -110,5 +112,6 @@ export async function getInvoiceListItems() {
 }
 
 export async function getInvoice(id: string) {
-  return getInvoices().find((i) => i.id === id);
+  const invoices = await getInvoices();
+  return invoices.find((i) => i.id === id);
 }

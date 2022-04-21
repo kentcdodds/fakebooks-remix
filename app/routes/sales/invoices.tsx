@@ -82,6 +82,7 @@ function InvoiceList({ children }: { children: React.ReactNode }) {
           <NavLink
             key={index}
             to={invoice.id}
+            prefetch="intent"
             className={({ isActive }) =>
               "block border-b border-gray-50 py-3 px-4 hover:bg-gray-50" +
               " " +

@@ -1,16 +1,21 @@
 import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { NavLink, Outlet, useLoaderData, useMatches } from "@remix-run/react";
+import { getExperiments } from "~/models/experiments.server";
 import { getInvoiceListItems } from "~/models/invoice.server";
 
-type LoaderData = { firstInvoiceId?: string };
+type LoaderData = { firstInvoiceId?: string; showCustomers: boolean };
 
-export const loader: LoaderFunction = async () => {
+export const loader: LoaderFunction = async ({ request }) => {
   const [firstInvoice] = await getInvoiceListItems();
+  const experiments = await getExperiments(request);
   if (!firstInvoice) {
-    return json<LoaderData>({});
+    return json<LoaderData>({ showCustomers: experiments.customers });
   }
-  return json<LoaderData>({ firstInvoiceId: firstInvoice.id });
+  return json<LoaderData>({
+    firstInvoiceId: firstInvoice.id,
+    showCustomers: experiments.customers,
+  });
 };
 
 const linkClassName = ({ isActive }: { isActive: boolean }) =>
@@ -29,10 +34,11 @@ export default function SalesRoute() {
         <NavLink to="." className={linkClassName({ isActive: indexMatches })}>
           Overview
         </NavLink>
-        <NavLink to="subscriptions" className={linkClassName}>
+        <NavLink prefetch="intent" to="subscriptions" className={linkClassName}>
           Subscriptions
         </NavLink>
         <NavLink
+          prefetch="intent"
           to={
             data.firstInvoiceId ? `invoices/${data.firstInvoiceId}` : "invoices"
           }
@@ -40,10 +46,12 @@ export default function SalesRoute() {
         >
           Invoices
         </NavLink>
-        <NavLink to="customers" className={linkClassName}>
-          Customers
-        </NavLink>
-        <NavLink to="deposits" className={linkClassName}>
+        {data.showCustomers ? (
+          <NavLink prefetch="intent" to="customers" className={linkClassName}>
+            Customers
+          </NavLink>
+        ) : null}
+        <NavLink prefetch="intent" to="deposits" className={linkClassName}>
           Deposits
         </NavLink>
       </div>
