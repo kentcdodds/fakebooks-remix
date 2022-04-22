@@ -1,4 +1,4 @@
-app = "fakebooks-remix-1b16"
+app = "fakebooks-remix"
 kill_signal = "SIGINT"
 kill_timeout = 5
 processes = [ ]
