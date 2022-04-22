@@ -29,6 +29,7 @@
     "@remix-run/react": "^1.4.1",
     "@remix-run/serve": "^1.4.1",
     "@remix-run/server-runtime": "^1.4.1",
+    "isbot": "^3.4.6",
     "react": "^18.0.0",
     "react-dom": "^18.0.0"
   },
