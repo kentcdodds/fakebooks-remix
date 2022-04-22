@@ -58,6 +58,12 @@ function Fakebooks({ children }: { children: React.ReactNode }) {
             <NavItem to="sales">Sales</NavItem>
             <NavItem to="expenses">Expenses</NavItem>
             <NavItem to="reports">Reports</NavItem>
+            <a
+              href="https://github.com/kentcdodds/fakebooks-remix"
+              className="my-1 py-1 px-2 pr-16 text-[length:14px]"
+            >
+              GitHub ↗️
+            </a>
           </div>
         </div>
       </div>
