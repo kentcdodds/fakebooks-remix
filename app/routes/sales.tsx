@@ -7,8 +7,10 @@ import { getInvoiceListItems } from "~/models/invoice.server";
 type LoaderData = { firstInvoiceId?: string; showCustomers: boolean };
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const [firstInvoice] = await getInvoiceListItems();
-  const experiments = await getExperiments(request);
+  const [[firstInvoice], experiments] = await Promise.all([
+    getInvoiceListItems(),
+    getExperiments(request),
+  ]);
   if (!firstInvoice) {
     return json<LoaderData>({ showCustomers: experiments.customers });
   }
