@@ -5,25 +5,38 @@ import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { useLoaderData, NavLink } from "@remix-run/react";
 import { getInvoiceListItems } from "~/models/invoice.server";
+import { currencyFormatter } from "~/utils";
 
 type LoaderData = {
   invoiceListItems: Awaited<ReturnType<typeof getInvoiceListItems>>;
   overdueAmount: number;
   dueSoonAmount: number;
+  overdueAmountFormatted: string;
+  dueSoonAmountFormatted: string;
 };
 
 export const loader: LoaderFunction = async () => {
   const invoiceListItems = await getInvoiceListItems();
+  const dueSoonAmount = invoiceListItems.reduce((sum, li) => {
+    if (li.dueStatus !== "due") {
+      return sum;
+    }
+    const remainingBalance = li.totalAmount - li.totalDeposits;
+    return sum + remainingBalance;
+  }, 0);
+  const overdueAmount = invoiceListItems.reduce((sum, li) => {
+    if (li.dueStatus !== "overdue") {
+      return sum;
+    }
+    const remainingBalance = li.totalAmount - li.totalDeposits;
+    return sum + remainingBalance;
+  }, 0);
   return json<LoaderData>({
     invoiceListItems,
-    overdueAmount: invoiceListItems.reduce(
-      (sum, li) => sum + (li.dueStatus === "overdue" ? li.total : 0),
-      0
-    ),
-    dueSoonAmount: invoiceListItems.reduce(
-      (sum, li) => sum + (li.dueStatus === "due" ? li.total : 0),
-      0
-    ),
+    overdueAmount,
+    dueSoonAmount,
+    overdueAmountFormatted: currencyFormatter.format(overdueAmount),
+    dueSoonAmountFormatted: currencyFormatter.format(dueSoonAmount),
   });
 };
 
@@ -34,7 +47,7 @@ export default function InvoicesRoute() {
   return (
     <div className="relative">
       <div className="flex items-center justify-between gap-4">
-        <InvoicesInfo label="Overdue" amount={data.overdueAmount} />
+        <InvoicesInfo label="Overdue" amount={data.overdueAmountFormatted} />
         <div className="flex h-4 flex-1 overflow-hidden rounded-full">
           <div className="flex-1 bg-yellow-brand" />
           <div
@@ -42,7 +55,11 @@ export default function InvoicesRoute() {
             style={{ width: `${dueSoonPercent}%` }}
           />
         </div>
-        <InvoicesInfo label="Due Soon" amount={data.dueSoonAmount} right />
+        <InvoicesInfo
+          label="Due Soon"
+          amount={data.dueSoonAmountFormatted}
+          right
+        />
       </div>
       <div className="h-4" />
       <LabelText>Invoice List</LabelText>
@@ -60,15 +77,13 @@ function InvoicesInfo({
   right,
 }: {
   label: string;
-  amount: number;
+  amount: string;
   right?: boolean;
 }) {
   return (
     <div className={right ? "text-right" : ""}>
       <LabelText>{label}</LabelText>
-      <div className="text-[length:18px] text-black">
-        ${amount.toLocaleString()}
-      </div>
+      <div className="text-[length:18px] text-black">{amount}</div>
     </div>
   );
 }
@@ -91,7 +106,7 @@ function InvoiceList({ children }: { children: React.ReactNode }) {
           >
             <div className="flex justify-between text-[length:14px] font-bold leading-6">
               <div>{invoice.name}</div>
-              <div>${invoice.total.toLocaleString()}</div>
+              <div>{invoice.totalAmountFormatted}</div>
             </div>
             <div className="flex justify-between text-[length:12px] font-medium leading-4 text-gray-400">
               <div>{invoice.number}</div>
@@ -106,7 +121,7 @@ function InvoiceList({ children }: { children: React.ReactNode }) {
                     : "")
                 }
               >
-                {invoice.dueDisplay}
+                {invoice.dueStatusDisplay}
               </div>
             </div>
           </NavLink>

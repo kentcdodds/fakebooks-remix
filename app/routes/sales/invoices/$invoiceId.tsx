@@ -1,16 +1,20 @@
 import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
+import { useCatch, useLoaderData, useParams } from "@remix-run/react";
 import { LabelText } from "~/components";
-import type { Invoice } from "~/models/invoice.server";
-import { getInvoice } from "~/models/invoice.server";
-import { getInvoiceDue } from "~/models/invoice.server";
+import { getInvoiceDetails } from "~/models/invoice.server";
 
 type LoaderData = {
-  invoice: Invoice;
-  totalDue: number;
+  customerName: string;
+  totalAmountFormatted: string;
   dueDisplay: string;
   invoiceDateDisplay: string;
+  lineItems: Array<{
+    id: string;
+    quantity: number;
+    unitPrice: number;
+    description: string;
+  }>;
 };
 
 export const loader: LoaderFunction = async ({ params }) => {
@@ -18,40 +22,52 @@ export const loader: LoaderFunction = async ({ params }) => {
   if (typeof invoiceId !== "string") {
     throw new Error("This should be unpossible.");
   }
-  const invoice = await getInvoice(invoiceId);
-  if (!invoice) {
+  const invoiceDetails = await getInvoiceDetails(invoiceId);
+  if (!invoiceDetails) {
     throw new Response("not found", { status: 404 });
   }
   return json<LoaderData>({
-    invoice,
-    totalDue: invoice.lineItems.reduce((total, item) => total + item.amount, 0),
-    dueDisplay: getInvoiceDue(invoice),
-    invoiceDateDisplay: invoice.invoiceDate.toLocaleDateString(),
+    customerName: invoiceDetails.invoice.customer.name,
+    totalAmountFormatted: invoiceDetails.totalAmountFormatted,
+    dueDisplay: invoiceDetails.dueStatusDisplay,
+    invoiceDateDisplay: invoiceDetails.invoice.invoiceDate.toLocaleDateString(),
+    lineItems: invoiceDetails.invoice.lineItems.map((li) => ({
+      id: li.id,
+      description: li.description,
+      quantity: li.quantity,
+      unitPrice: li.unitPrice,
+    })),
   });
 };
 
+const lineItemClassName =
+  "flex justify-between border-t border-gray-100 py-4 text-[14px] leading-[24px]";
 export default function InvoiceRoute() {
   const data = useLoaderData() as LoaderData;
   return (
     <div className="relative p-10">
       <div className="text-[length:14px] font-bold leading-6">
-        {data.invoice.name}
+        {data.customerName}
       </div>
       <div className="text-[length:32px] font-bold leading-[40px]">
-        ${data.totalDue.toLocaleString()}
+        {data.totalAmountFormatted}
       </div>
       <LabelText>
         {data.dueDisplay} • Invoiced {data.invoiceDateDisplay}
       </LabelText>
       <div className="h-4" />
-      {data.invoice.lineItems.map((item) => (
-        <LineItem key={item.id} label={item.label} amount={item.amount} />
+      {data.lineItems.map((item) => (
+        <LineItem
+          key={item.id}
+          description={item.description}
+          unitPrice={item.unitPrice}
+          quantity={item.quantity}
+        />
       ))}
-      <LineItem
-        bold
-        label="Net Total"
-        amount={data.invoice.lineItems.reduce((sum, li) => sum + li.amount, 0)}
-      />
+      <div className={`${lineItemClassName} font-bold`}>
+        <div>Net Total</div>
+        <div>{data.totalAmountFormatted.toLocaleString()}</div>
+      </div>
     </div>
   );
 }
@@ -72,24 +88,34 @@ export function ErrorBoundary({ error }: { error: Error }) {
 }
 
 function LineItem({
-  label,
-  amount,
-  bold,
+  description,
+  quantity,
+  unitPrice,
 }: {
-  label: string;
-  amount: number;
-  bold?: boolean;
+  description: string;
+  quantity: number;
+  unitPrice: number;
 }) {
   return (
-    <div
-      className={
-        "flex justify-between border-t border-gray-100 py-4 text-[14px] leading-[24px]" +
-        " " +
-        (bold ? "font-bold" : "")
-      }
-    >
-      <div>{label}</div>
-      <div>${amount.toLocaleString()}</div>
+    <div className={lineItemClassName}>
+      <div>{description}</div>
+      {quantity === 1 ? null : <div className="text-[10px]">({quantity}x)</div>}
+      <div>${unitPrice.toLocaleString()}</div>
     </div>
   );
+}
+
+export function CatchBoundary() {
+  const caught = useCatch();
+  const params = useParams();
+
+  if (caught.status === 404) {
+    return (
+      <div className="p-12 text-red-500">
+        No invoice found with the ID of "{params.invoiceId}"
+      </div>
+    );
+  }
+
+  throw new Error(`Unexpected caught response with status: ${caught.status}`);
 }
