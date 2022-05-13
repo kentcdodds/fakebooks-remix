@@ -6,6 +6,7 @@ import { json } from "@remix-run/node";
 import { useLoaderData, NavLink } from "@remix-run/react";
 import { getInvoiceListItems } from "~/models/invoice.server";
 import { currencyFormatter } from "~/utils";
+import { requireUser } from "~/session.server";
 
 type LoaderData = {
   invoiceListItems: Awaited<ReturnType<typeof getInvoiceListItems>>;
@@ -15,7 +16,8 @@ type LoaderData = {
   dueSoonAmountFormatted: string;
 };
 
-export const loader: LoaderFunction = async () => {
+export const loader: LoaderFunction = async ({ request }) => {
+  await requireUser(request);
   const invoiceListItems = await getInvoiceListItems();
   const dueSoonAmount = invoiceListItems.reduce((sum, li) => {
     if (li.dueStatus !== "due") {

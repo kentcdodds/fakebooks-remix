@@ -1,22 +1,19 @@
 import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { NavLink, Outlet, useLoaderData, useMatches } from "@remix-run/react";
-import { getExperiments } from "~/models/experiments.server";
 import { getInvoiceListItems } from "~/models/invoice.server";
+import { requireUser } from "~/session.server";
 
-type LoaderData = { firstInvoiceId?: string; showCustomers: boolean };
+type LoaderData = { firstInvoiceId?: string };
 
 export const loader: LoaderFunction = async ({ request }) => {
-  const [[firstInvoice], experiments] = await Promise.all([
-    getInvoiceListItems(),
-    getExperiments(request),
-  ]);
+  await requireUser(request);
+  const [firstInvoice] = await getInvoiceListItems();
   if (!firstInvoice) {
-    return json<LoaderData>({ showCustomers: experiments.customers });
+    return json<LoaderData>({});
   }
   return json<LoaderData>({
     firstInvoiceId: firstInvoice.id,
-    showCustomers: experiments.customers,
   });
 };
 
@@ -26,8 +23,10 @@ const linkClassName = ({ isActive }: { isActive: boolean }) =>
 export default function SalesRoute() {
   const data = useLoaderData() as LoaderData;
   const matches = useMatches();
-  const indexMatches = matches.some((m) => m.id === "routes/sales/index");
-  const invoiceMatches = matches.some((m) => m.id === "routes/sales/invoices");
+  const indexMatches = matches.some((m) => m.id === "routes/__app/sales/index");
+  const invoiceMatches = matches.some(
+    (m) => m.id === "routes/__app/sales/invoices"
+  );
   return (
     <div className="relative h-full p-10">
       <div className="font-display text-d-h3 text-black">Sales</div>
@@ -48,11 +47,9 @@ export default function SalesRoute() {
         >
           Invoices
         </NavLink>
-        {data.showCustomers ? (
-          <NavLink prefetch="intent" to="customers" className={linkClassName}>
-            Customers
-          </NavLink>
-        ) : null}
+        <NavLink prefetch="intent" to="customers" className={linkClassName}>
+          Customers
+        </NavLink>
         <NavLink prefetch="intent" to="deposits" className={linkClassName}>
           Deposits
         </NavLink>

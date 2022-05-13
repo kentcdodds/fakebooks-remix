@@ -3,6 +3,7 @@ import { json } from "@remix-run/node";
 import { useCatch, useLoaderData, useParams } from "@remix-run/react";
 import { LabelText } from "~/components";
 import { getInvoiceDetails } from "~/models/invoice.server";
+import { requireUser } from "~/session.server";
 
 type LoaderData = {
   customerName: string;
@@ -17,7 +18,8 @@ type LoaderData = {
   }>;
 };
 
-export const loader: LoaderFunction = async ({ params }) => {
+export const loader: LoaderFunction = async ({ request, params }) => {
+  await requireUser(request);
   const { invoiceId } = params;
   if (typeof invoiceId !== "string") {
     throw new Error("This should be unpossible.");
