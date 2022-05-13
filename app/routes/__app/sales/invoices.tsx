@@ -1,5 +1,5 @@
 import { Outlet } from "@remix-run/react";
-import { LabelText } from "~/components";
+import { FilePlusIcon, LabelText } from "~/components";
 
 import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
@@ -93,41 +93,56 @@ function InvoicesInfo({
 function InvoiceList({ children }: { children: React.ReactNode }) {
   const { invoiceListItems } = useLoaderData() as LoaderData;
   return (
-    <div className="flex rounded-lg border border-gray-100">
+    <div className="flex overflow-hidden rounded-lg border border-gray-100">
       <div className="w-1/2 border-r border-gray-100">
-        {invoiceListItems.map((invoice, index) => (
-          <NavLink
-            key={index}
-            to={invoice.id}
-            prefetch="intent"
-            className={({ isActive }) =>
-              "block border-b border-gray-50 py-3 px-4 hover:bg-gray-50" +
-              " " +
-              (isActive ? "bg-gray-50" : "")
-            }
-          >
-            <div className="flex justify-between text-[length:14px] font-bold leading-6">
-              <div>{invoice.name}</div>
-              <div>{invoice.totalAmountFormatted}</div>
-            </div>
-            <div className="flex justify-between text-[length:12px] font-medium leading-4 text-gray-400">
-              <div>{invoice.number}</div>
-              <div
-                className={
-                  "uppercase" +
-                  " " +
-                  (invoice.dueStatus === "paid"
-                    ? "text-green-brand"
-                    : invoice.dueStatus === "overdue"
-                    ? "text-red-brand"
-                    : "")
-                }
-              >
-                {invoice.dueStatusDisplay}
+        <NavLink
+          to="new"
+          prefetch="intent"
+          className={({ isActive }) =>
+            "block border-b-4 border-gray-100 py-3 px-4 hover:bg-gray-50" +
+            " " +
+            (isActive ? "bg-gray-50" : "")
+          }
+        >
+          <span className="flex gap-1">
+            <FilePlusIcon /> <span>Create new invoice</span>
+          </span>
+        </NavLink>
+        <div className="max-h-96 overflow-y-scroll">
+          {invoiceListItems.map((invoice, index) => (
+            <NavLink
+              key={index}
+              to={invoice.id}
+              prefetch="intent"
+              className={({ isActive }) =>
+                "block border-b border-gray-50 py-3 px-4 hover:bg-gray-50" +
+                " " +
+                (isActive ? "bg-gray-50" : "")
+              }
+            >
+              <div className="flex justify-between text-[length:14px] font-bold leading-6">
+                <div>{invoice.name}</div>
+                <div>{invoice.totalAmountFormatted}</div>
               </div>
-            </div>
-          </NavLink>
-        ))}
+              <div className="flex justify-between text-[length:12px] font-medium leading-4 text-gray-400">
+                <div>{invoice.number}</div>
+                <div
+                  className={
+                    "uppercase" +
+                    " " +
+                    (invoice.dueStatus === "paid"
+                      ? "text-green-brand"
+                      : invoice.dueStatus === "overdue"
+                      ? "text-red-brand"
+                      : "")
+                  }
+                >
+                  {invoice.dueStatusDisplay}
+                </div>
+              </div>
+            </NavLink>
+          ))}
+        </div>
       </div>
       <div className="w-1/2">{children}</div>
     </div>

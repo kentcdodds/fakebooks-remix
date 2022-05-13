@@ -29,7 +29,7 @@ export default function SalesRoute() {
   );
   return (
     <div className="relative h-full p-10">
-      <div className="font-display text-d-h3 text-black">Sales</div>
+      <h1 className="font-display text-d-h3 text-black">Sales</h1>
       <div className="h-6" />
       <div className="flex gap-4 border-b border-gray-100 pb-4 text-[length:14px] font-medium text-gray-400">
         <NavLink to="." className={linkClassName({ isActive: indexMatches })}>

@@ -1,5 +1,5 @@
 import { prisma } from "~/db.server";
-import type { Invoice } from "@prisma/client";
+import type { Invoice, LineItem } from "@prisma/client";
 import { currencyFormatter } from "~/utils";
 
 export type { Invoice };
@@ -129,4 +129,39 @@ export async function getInvoiceDetails(invoiceId: string) {
   });
   if (!invoice) return null;
   return { invoice, ...getInvoiceDerivedData(invoice) };
+}
+
+export type LineItemFields = Pick<
+  LineItem,
+  "quantity" | "unitPrice" | "description"
+>;
+
+export async function createInvoice({
+  dueDate,
+  customerId,
+  lineItems,
+}: {
+  dueDate: Date;
+  customerId: string;
+  lineItems: Array<LineItemFields>;
+}) {
+  const largestInvoiceNumber = await prisma.invoice.findFirst({
+    select: { number: true },
+    orderBy: { number: "desc" },
+  });
+  const nextNumber = largestInvoiceNumber ? largestInvoiceNumber.number + 1 : 1;
+  return prisma.invoice.create({
+    data: {
+      number: nextNumber,
+      dueDate,
+      customer: { connect: { id: customerId } },
+      lineItems: {
+        create: lineItems.map((li) => ({
+          description: li.description,
+          quantity: li.quantity,
+          unitPrice: li.unitPrice,
+        })),
+      },
+    },
+  });
 }
