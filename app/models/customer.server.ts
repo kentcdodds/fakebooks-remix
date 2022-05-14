@@ -15,7 +15,7 @@ export async function searchCustomers(query: string) {
           },
         },
         {
-          fullName: {
+          name: {
             equals: query,
           },
         },
