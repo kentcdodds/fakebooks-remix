@@ -109,9 +109,9 @@ function InvoiceList({ children }: { children: React.ReactNode }) {
           </span>
         </NavLink>
         <div className="max-h-96 overflow-y-scroll">
-          {invoiceListItems.map((invoice, index) => (
+          {invoiceListItems.map((invoice) => (
             <NavLink
-              key={index}
+              key={invoice.id}
               to={invoice.id}
               prefetch="intent"
               className={({ isActive }) =>

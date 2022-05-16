@@ -4,6 +4,7 @@ import { useCatch, useLoaderData, useParams } from "@remix-run/react";
 import { LabelText } from "~/components";
 import { getInvoiceDetails } from "~/models/invoice.server";
 import { requireUser } from "~/session.server";
+import { currencyFormatter } from "~/utils";
 
 type LoaderData = {
   customerName: string;
@@ -102,7 +103,7 @@ function LineItem({
     <div className={lineItemClassName}>
       <div>{description}</div>
       {quantity === 1 ? null : <div className="text-[10px]">({quantity}x)</div>}
-      <div>${unitPrice.toLocaleString()}</div>
+      <div>{currencyFormatter.format(unitPrice)}</div>
     </div>
   );
 }

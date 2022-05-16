@@ -1,12 +1,64 @@
-import type { LoaderFunction } from "@remix-run/server-runtime";
-import { json } from "@remix-run/server-runtime";
+import { NavLink, Outlet, useLoaderData } from "@remix-run/react";
+import type { LoaderFunction } from "@remix-run/node";
+import { json } from "@remix-run/node";
+import { FilePlusIcon } from "~/components";
 import { requireUser } from "~/session.server";
+import { getCustomerListItems } from "~/models/customer.server";
+
+type LoaderData = {
+  customers: Awaited<ReturnType<typeof getCustomerListItems>>;
+};
 
 export const loader: LoaderFunction = async ({ request }) => {
   await requireUser(request);
-  return json({});
+  return json<LoaderData>({
+    customers: await getCustomerListItems(),
+  });
 };
 
 export default function Customers() {
-  return <div>We love our customers. Because money.</div>;
+  const { customers } = useLoaderData() as LoaderData;
+  return (
+    <div className="flex overflow-hidden rounded-lg border border-gray-100">
+      <div className="w-1/2 border-r border-gray-100">
+        <NavLink
+          to="new"
+          prefetch="intent"
+          className={({ isActive }) =>
+            "block border-b-4 border-gray-100 py-3 px-4 hover:bg-gray-50" +
+            " " +
+            (isActive ? "bg-gray-50" : "")
+          }
+        >
+          <span className="flex gap-1">
+            <FilePlusIcon /> <span>Create new customer</span>
+          </span>
+        </NavLink>
+        <div className="max-h-96 overflow-y-scroll">
+          {customers.map((customer) => (
+            <NavLink
+              key={customer.id}
+              to={customer.id}
+              prefetch="intent"
+              className={({ isActive }) =>
+                "block border-b border-gray-50 py-3 px-4 hover:bg-gray-50" +
+                " " +
+                (isActive ? "bg-gray-50" : "")
+              }
+            >
+              <div className="flex justify-between text-[length:14px] font-bold leading-6">
+                <div>{customer.name}</div>
+              </div>
+              <div className="flex justify-between text-[length:12px] font-medium leading-4 text-gray-400">
+                <div>{customer.email}</div>
+              </div>
+            </NavLink>
+          ))}
+        </div>
+      </div>
+      <div className="w-1/2">
+        <Outlet />
+      </div>
+    </div>
+  );
 }

@@ -9,26 +9,7 @@ const getDaysToDueDate = (date: Date) =>
     (date.getTime() - asUTC(new Date()).getTime()) / (1000 * 60 * 60 * 24)
   );
 
-export async function getInvoiceDueInfo(invoiceId: string) {
-  const invoice = await prisma.invoice.findUnique({
-    where: { id: invoiceId },
-    select: {
-      dueDate: true,
-      lineItems: {
-        select: { quantity: true, unitPrice: true },
-      },
-      deposits: {
-        select: { amount: true },
-      },
-    },
-  });
-
-  if (!invoice) return null;
-
-  return getInvoiceDerivedData(invoice);
-}
-
-function getInvoiceDerivedData(invoice: {
+export function getInvoiceDerivedData(invoice: {
   dueDate: Date;
   lineItems: Array<{ quantity: number; unitPrice: number }>;
   deposits: Array<{ amount: number }>;
@@ -61,7 +42,9 @@ function getInvoiceDerivedData(invoice: {
       ? "Overdue"
       : daysToDueDate === 0
       ? "Due today"
-      : `Due in ${daysToDueDate} Days`;
+      : daysToDueDate === 1
+      ? `Due tomorrow`
+      : `Due in ${daysToDueDate} days`;
 
   return {
     totalAmount,

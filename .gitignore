@@ -4,3 +4,4 @@ node_modules
 /public/build
 
 /app/styles/tailwind.css
+/prisma/data.db
