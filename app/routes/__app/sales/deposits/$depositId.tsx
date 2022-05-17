@@ -1,8 +1,9 @@
-import type { LoaderFunction } from "@remix-run/node";
-import { json } from "@remix-run/node";
-import { useLoaderData } from "@remix-run/react";
-import { getDepositDetails } from "~/models/deposit.server";
+import type { LoaderFunction, ActionFunction } from "@remix-run/node";
+import { Form, useLoaderData } from "@remix-run/react";
+import { redirect, json } from "@remix-run/node";
+import { deleteDeposit, getDepositDetails } from "~/models/deposit.server";
 import { requireUser } from "~/session.server";
+import invariant from "tiny-invariant";
 
 type LoaderData = {
   depositNote: string;
@@ -24,21 +25,54 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   });
 };
 
+export const action: ActionFunction = async ({ request, params }) => {
+  const { depositId } = params;
+  if (typeof depositId !== "string") {
+    throw new Error("This should be unpossible.");
+  }
+  const formData = await request.formData();
+  const intent = formData.get("intent");
+  invariant(typeof intent === "string", "intent must be a string");
+  switch (intent) {
+    case "delete": {
+      await deleteDeposit(depositId);
+      return redirect("/sales/deposits");
+    }
+    default: {
+      throw new Error(`Unsupported intent: ${intent}`);
+    }
+  }
+};
+
 export default function DepositRoute() {
   const data = useLoaderData() as LoaderData;
   return (
     <div className="p-8">
-      {data.depositNote ? (
-        <span>
-          Note:
-          <br />
-          <span className="pl-1">{data.depositNote}</span>
-        </span>
-      ) : (
-        <span className="text-m-p-sm uppercase text-gray-500 md:text-d-p-sm">
-          No note
-        </span>
-      )}
+      <div className="flex justify-between">
+        {data.depositNote ? (
+          <span>
+            Note:
+            <br />
+            <span className="pl-1">{data.depositNote}</span>
+          </span>
+        ) : (
+          <span className="text-m-p-sm uppercase text-gray-500 md:text-d-p-sm">
+            No note
+          </span>
+        )}
+        <div>
+          <Form method="post">
+            <button
+              type="submit"
+              title="Delete deposit"
+              name="intent"
+              value="delete"
+            >
+              🗑
+            </button>
+          </Form>
+        </div>
+      </div>
     </div>
   );
 }

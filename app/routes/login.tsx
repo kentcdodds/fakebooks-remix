@@ -116,7 +116,7 @@ export default function LoginPage() {
                 autoComplete="email"
                 aria-invalid={actionData?.errors?.email ? true : undefined}
                 aria-describedby="email-error"
-                className="text-lg w-full rounded border border-gray-500 px-2 py-1"
+                className={inputClasses}
               />
               {actionData?.errors?.email && (
                 <div className="pt-1 text-red-700" id="email-error">
@@ -142,7 +142,7 @@ export default function LoginPage() {
                 autoComplete="current-password"
                 aria-invalid={actionData?.errors?.password ? true : undefined}
                 aria-describedby="password-error"
-                className="text-lg w-full rounded border border-gray-500 px-2 py-1"
+                className={inputClasses}
               />
               {actionData?.errors?.password && (
                 <div className="pt-1 text-red-700" id="password-error">

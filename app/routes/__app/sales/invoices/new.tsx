@@ -1,5 +1,5 @@
 import { Form, useFetcher } from "@remix-run/react";
-import { LabelText, MinusIcon, PlusIcon } from "~/components";
+import { inputClasses, LabelText, MinusIcon, PlusIcon } from "~/components";
 import { useCombobox } from "downshift";
 import { json, redirect } from "@remix-run/node";
 import type { ActionFunction, LoaderFunction } from "@remix-run/node";
@@ -10,6 +10,7 @@ import { useId, useState } from "react";
 import clsx from "clsx";
 import type { LineItemFields } from "~/models/invoice.server";
 import { createInvoice } from "~/models/invoice.server";
+import { parseDate } from "~/utils";
 
 export const loader: LoaderFunction = async ({ request }) => {
   await requireUser(request);
@@ -37,10 +38,7 @@ export const action: ActionFunction = async ({ request }) => {
       const dueDateString = formData.get("dueDate");
       invariant(typeof customerId === "string", "customerId is required");
       invariant(typeof dueDateString === "string", "dueDate is required");
-      const [dueDateYear, dueDateMonth, dueDateDay] = dueDateString
-        .split("-")
-        .map(Number);
-      const dueDate = new Date(dueDateYear, dueDateMonth - 1, dueDateDay);
+      const dueDate = parseDate(dueDateString);
 
       const lineItemQuantities = formData.getAll("quantity");
       const lineItemUnitPrices = formData.getAll("unitPrice");
@@ -78,7 +76,7 @@ export default function NewInvoice() {
           <input
             id="dueDate"
             name="dueDate"
-            className="text-lg w-full rounded border border-gray-500 px-2 py-1"
+            className={inputClasses}
             type="date"
           />
         </div>
@@ -133,7 +131,7 @@ function LineItems() {
                   id={`quantity-${lineItemClientId}`}
                   name="quantity"
                   type="number"
-                  className="text-lg w-full rounded border border-gray-500 px-2 py-1"
+                  className={inputClasses}
                 />
               </div>
               <div className="flex-1">
@@ -148,7 +146,7 @@ function LineItems() {
                   type="number"
                   min="1"
                   step="any"
-                  className="text-lg w-full rounded border border-gray-500 px-2 py-1"
+                  className={inputClasses}
                 />
               </div>
             </div>
@@ -161,7 +159,7 @@ function LineItems() {
               <input
                 id={`description-${lineItemClientId}`}
                 name="description"
-                className="text-lg w-full rounded border border-gray-500 px-2 py-1"
+                className={inputClasses}
               />
             </div>
           </div>

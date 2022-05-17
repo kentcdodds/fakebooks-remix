@@ -45,3 +45,7 @@ export async function createDeposit(
 ) {
   return prisma.deposit.create({ data });
 }
+
+export async function deleteDeposit(id: string) {
+  return prisma.deposit.delete({ where: { id } });
+}

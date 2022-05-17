@@ -2,6 +2,7 @@ import { prisma } from "~/db.server";
 import type { Invoice, LineItem } from "@prisma/client";
 
 export type { Invoice, LineItem };
+export type DueStatus = "paid" | "overpaid" | "overdue" | "due";
 
 const getDaysToDueDate = (date: Date) =>
   Math.ceil(
@@ -23,7 +24,7 @@ export function getInvoiceDerivedData(invoice: {
     (acc, deposit) => acc + deposit.amount,
     0
   );
-  const dueStatus =
+  const dueStatus: DueStatus =
     totalAmount === totalDeposits
       ? "paid"
       : totalDeposits > totalAmount
@@ -104,7 +105,7 @@ export async function getInvoiceDetails(invoiceId: string) {
         },
       },
       deposits: {
-        select: { id: true, amount: true },
+        select: { id: true, amount: true, depositDate: true },
       },
     },
   });

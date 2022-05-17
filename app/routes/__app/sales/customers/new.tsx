@@ -2,7 +2,7 @@ import { Form } from "@remix-run/react";
 import type { ActionFunction } from "@remix-run/server-runtime";
 import { redirect } from "@remix-run/server-runtime";
 import invariant from "tiny-invariant";
-import { LabelText } from "~/components";
+import { inputClasses, LabelText, submitButtonClasses } from "~/components";
 import { createCustomer } from "~/models/customer.server";
 import { requireUser } from "~/session.server";
 
@@ -34,12 +34,7 @@ export default function NewCustomer() {
           <label htmlFor="name">
             <LabelText>Name</LabelText>
           </label>
-          <input
-            id="name"
-            name="name"
-            className="text-lg w-full rounded border border-gray-500 px-2 py-1"
-            type="text"
-          />
+          <input id="name" name="name" className={inputClasses} type="text" />
         </div>
         <div>
           <label htmlFor="email">
@@ -48,7 +43,7 @@ export default function NewCustomer() {
           <input
             id="email"
             name="email"
-            className="text-lg w-full rounded border border-gray-500 px-2 py-1"
+            className={inputClasses}
             type="email"
           />
         </div>
@@ -58,7 +53,7 @@ export default function NewCustomer() {
             type="submit"
             name="intent"
             value="create"
-            className="w-full rounded bg-green-500 py-2 px-4 text-white hover:bg-green-600 focus:bg-green-400"
+            className={submitButtonClasses}
           >
             Create Customer
           </button>
