@@ -16,7 +16,7 @@ import {
   useLocation,
 } from "@remix-run/react";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Dialog, DialogOverlay, DialogContent } from "@reach/dialog";
+import { Dialog } from "@reach/dialog";
 import reachDialogStylesheet from "@reach/dialog/styles.css";
 import { getUser } from "./session.server";
 
