@@ -1,6 +1,8 @@
 import type { Deposit } from "@prisma/client";
 import { prisma } from "~/db.server";
 
+export type { Deposit };
+
 export async function getDepositListItems() {
   const deposits = await prisma.deposit.findMany({
     orderBy: {

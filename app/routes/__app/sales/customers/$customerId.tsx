@@ -3,6 +3,7 @@ import { json } from "@remix-run/node";
 import { Link, useLoaderData } from "@remix-run/react";
 import { getCustomerDetails } from "~/models/customer.server";
 import { requireUser } from "~/session.server";
+import { currencyFormatter } from "~/utils";
 
 type LoaderData = {
   customer: NonNullable<Awaited<ReturnType<typeof getCustomerDetails>>>;
@@ -60,7 +61,7 @@ export default function CustomerRoute() {
           >
             {invoiceDetails.dueStatusDisplay}
           </div>
-          <div>{invoiceDetails.totalAmountFormatted}</div>
+          <div>{currencyFormatter.format(invoiceDetails.totalAmount)}</div>
         </div>
       ))}
     </div>

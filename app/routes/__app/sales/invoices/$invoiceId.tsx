@@ -3,21 +3,21 @@ import { json } from "@remix-run/node";
 import { Link, useCatch, useLoaderData, useParams } from "@remix-run/react";
 import { LabelText } from "~/components";
 import { getInvoiceDetails } from "~/models/invoice.server";
+import type { LineItem } from "~/models/invoice.server";
 import { requireUser } from "~/session.server";
 import { currencyFormatter } from "~/utils";
+import type { Deposit } from "~/models/deposit.server";
 
 type LoaderData = {
   customerName: string;
   customerId: string;
-  totalAmountFormatted: string;
+  totalAmount: number;
   dueDisplay: string;
   invoiceDateDisplay: string;
-  lineItems: Array<{
-    id: string;
-    quantity: number;
-    unitPrice: number;
-    description: string;
-  }>;
+  lineItems: Array<
+    Pick<LineItem, "id" | "quantity" | "unitPrice" | "description">
+  >;
+  deposits: Array<Pick<Deposit, "id" | "amount">>;
 };
 
 export const loader: LoaderFunction = async ({ request, params }) => {
@@ -33,7 +33,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   return json<LoaderData>({
     customerName: invoiceDetails.invoice.customer.name,
     customerId: invoiceDetails.invoice.customer.id,
-    totalAmountFormatted: invoiceDetails.totalAmountFormatted,
+    totalAmount: invoiceDetails.totalAmount,
     dueDisplay: invoiceDetails.dueStatusDisplay,
     invoiceDateDisplay: invoiceDetails.invoice.invoiceDate.toLocaleDateString(),
     lineItems: invoiceDetails.invoice.lineItems.map((li) => ({
@@ -41,6 +41,10 @@ export const loader: LoaderFunction = async ({ request, params }) => {
       description: li.description,
       quantity: li.quantity,
       unitPrice: li.unitPrice,
+    })),
+    deposits: invoiceDetails.invoice.deposits.map((deposit) => ({
+      id: deposit.id,
+      amount: deposit.amount,
     })),
   });
 };
@@ -58,14 +62,14 @@ export default function InvoiceRoute() {
         {data.customerName}
       </Link>
       <div className="text-[length:32px] font-bold leading-[40px]">
-        {data.totalAmountFormatted}
+        {currencyFormatter.format(data.totalAmount)}
       </div>
       <LabelText>
         {data.dueDisplay} • Invoiced {data.invoiceDateDisplay}
       </LabelText>
       <div className="h-4" />
       {data.lineItems.map((item) => (
-        <LineItem
+        <LineItemDisplay
           key={item.id}
           description={item.description}
           unitPrice={item.unitPrice}
@@ -74,7 +78,7 @@ export default function InvoiceRoute() {
       ))}
       <div className={`${lineItemClassName} font-bold`}>
         <div>Net Total</div>
-        <div>{data.totalAmountFormatted.toLocaleString()}</div>
+        <div>{currencyFormatter.format(data.totalAmount)}</div>
       </div>
     </div>
   );
@@ -95,7 +99,7 @@ export function ErrorBoundary({ error }: { error: Error }) {
   );
 }
 
-function LineItem({
+function LineItemDisplay({
   description,
   quantity,
   unitPrice,

@@ -1,8 +1,7 @@
 import { prisma } from "~/db.server";
 import type { Invoice, LineItem } from "@prisma/client";
-import { currencyFormatter } from "~/utils";
 
-export type { Invoice };
+export type { Invoice, LineItem };
 
 const getDaysToDueDate = (date: Date) =>
   Math.ceil(
@@ -48,7 +47,6 @@ export function getInvoiceDerivedData(invoice: {
 
   return {
     totalAmount,
-    totalAmountFormatted: currencyFormatter.format(totalAmount),
     totalDeposits,
     daysToDueDate,
     dueStatus,
@@ -106,7 +104,7 @@ export async function getInvoiceDetails(invoiceId: string) {
         },
       },
       deposits: {
-        select: { amount: true },
+        select: { id: true, amount: true },
       },
     },
   });
