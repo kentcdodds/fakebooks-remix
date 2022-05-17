@@ -96,3 +96,17 @@ export function MinusIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
+export function CevronDown(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg width={24} height={24} fill="none" {...props}>
+      <path
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
+        d="M15.25 10.75 12 14.25l-3.25-3.5"
+      />
+    </svg>
+  );
+}

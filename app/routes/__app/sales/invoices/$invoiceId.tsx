@@ -1,6 +1,6 @@
 import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { useCatch, useLoaderData, useParams } from "@remix-run/react";
+import { Link, useCatch, useLoaderData, useParams } from "@remix-run/react";
 import { LabelText } from "~/components";
 import { getInvoiceDetails } from "~/models/invoice.server";
 import { requireUser } from "~/session.server";
@@ -8,6 +8,7 @@ import { currencyFormatter } from "~/utils";
 
 type LoaderData = {
   customerName: string;
+  customerId: string;
   totalAmountFormatted: string;
   dueDisplay: string;
   invoiceDateDisplay: string;
@@ -31,6 +32,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   }
   return json<LoaderData>({
     customerName: invoiceDetails.invoice.customer.name,
+    customerId: invoiceDetails.invoice.customer.id,
     totalAmountFormatted: invoiceDetails.totalAmountFormatted,
     dueDisplay: invoiceDetails.dueStatusDisplay,
     invoiceDateDisplay: invoiceDetails.invoice.invoiceDate.toLocaleDateString(),
@@ -49,9 +51,12 @@ export default function InvoiceRoute() {
   const data = useLoaderData() as LoaderData;
   return (
     <div className="relative p-10">
-      <div className="text-[length:14px] font-bold leading-6">
+      <Link
+        to={`../../customers/${data.customerId}`}
+        className="text-[length:14px] font-bold leading-6 text-blue-600 underline"
+      >
         {data.customerName}
-      </div>
+      </Link>
       <div className="text-[length:32px] font-bold leading-[40px]">
         {data.totalAmountFormatted}
       </div>

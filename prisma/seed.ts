@@ -45,6 +45,7 @@ async function seed() {
       deposits: Array<{
         amount: number;
         depositDate: Date;
+        note: string;
       }>;
     }>;
   }>;
@@ -61,7 +62,13 @@ async function seed() {
           lineItems: [
             { description: "Cat Drawing", quantity: 1, unitPrice: 10_800.34 },
           ],
-          deposits: [{ amount: 6_409.04, depositDate: fromNow(-8) }],
+          deposits: [
+            {
+              amount: 6_409.04,
+              depositDate: fromNow(-8),
+              note: "Will get the rest to you by the due date. Love the cat!",
+            },
+          ],
         },
       ],
     },
@@ -81,7 +88,13 @@ async function seed() {
               quantity: 2,
             },
           ],
-          deposits: [{ amount: 2_000.98, depositDate: fromNow(-2) }],
+          deposits: [
+            {
+              amount: 2_000.98,
+              depositDate: fromNow(-2),
+              note: "Paying off the first squirrel drawing.",
+            },
+          ],
         },
       ],
     },
@@ -97,8 +110,16 @@ async function seed() {
             { description: "Koala Drawing", quantity: 2, unitPrice: 9_500.02 },
           ],
           deposits: [
-            { amount: 9_500.02, depositDate: fromNow(-4) },
-            { amount: 9_500.02, depositDate: fromNow(-2) },
+            {
+              amount: 9_500.02,
+              depositDate: fromNow(-4),
+              note: "First Koala payment. Will pay the second soon.",
+            },
+            {
+              amount: 9_500.02,
+              depositDate: fromNow(-2),
+              note: "Final payment. Thanks a ton!",
+            },
           ],
         },
       ],
@@ -137,7 +158,13 @@ async function seed() {
               unitPrice: 4_600.65,
             },
           ],
-          deposits: [{ amount: 4_600.65, depositDate: fromNow(-1) }],
+          deposits: [
+            {
+              amount: 4_600.65,
+              depositDate: fromNow(-1),
+              note: "This elephant is amazing",
+            },
+          ],
         },
       ],
     },
@@ -157,6 +184,7 @@ async function seed() {
               create: invoice.deposits.map((d) => ({
                 amount: d.amount,
                 depositDate: d.depositDate,
+                note: d.note,
               })),
             },
             lineItems: {
@@ -175,11 +203,11 @@ async function seed() {
   console.log(`Database has been seeded. 🌱`);
 }
 
-seed()
-  .catch((e) => {
-    console.error(e);
-    process.exit(1);
-  })
-  .finally(async () => {
-    await prisma.$disconnect();
-  });
+// seed()
+//   .catch((e) => {
+//     console.error(e);
+//     process.exit(1);
+//   })
+//   .finally(async () => {
+//     await prisma.$disconnect();
+//   });

@@ -57,6 +57,7 @@ model Deposit {
 
   amount Float
   depositDate DateTime @default(now())
+  note String
 
   invoiceId String
   invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade, onUpdate: Cascade)

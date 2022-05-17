@@ -95,7 +95,7 @@ export async function getInvoiceDetails(invoiceId: string) {
       invoiceDate: true,
       dueDate: true,
       customer: {
-        select: { name: true },
+        select: { id: true, name: true },
       },
       lineItems: {
         select: {
