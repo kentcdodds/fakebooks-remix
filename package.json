@@ -38,6 +38,7 @@
     "isbot": "^3.4.7",
     "react": "^18.1.0",
     "react-dom": "^18.1.0",
+    "spin-delay": "^1.1.0",
     "tiny-invariant": "^1.2.0"
   },
   "devDependencies": {

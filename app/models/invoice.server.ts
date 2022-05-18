@@ -59,6 +59,10 @@ function asUTC(date: Date) {
   return new Date(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate());
 }
 
+export async function getFirstInvoice() {
+  return prisma.invoice.findFirst();
+}
+
 export async function getInvoiceListItems() {
   const invoices = await prisma.invoice.findMany({
     select: {

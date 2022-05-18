@@ -1,6 +1,6 @@
 import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
-import { Link, useLoaderData } from "@remix-run/react";
+import { Link, useCatch, useLoaderData, useParams } from "@remix-run/react";
 import { getCustomerDetails } from "~/models/customer.server";
 import { requireUser } from "~/session.server";
 import { currencyFormatter } from "~/utils";
@@ -11,9 +11,9 @@ type LoaderData = {
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   await requireUser(request);
-  await new Promise((resolve) =>
-    setTimeout(resolve, Math.random() * 3000 + 1500)
-  );
+  // await new Promise((resolve) =>
+  //   setTimeout(resolve, Math.random() * 3000 + 1500)
+  // );
   const { customerId } = params;
   if (typeof customerId !== "string") {
     throw new Error("This should be unpossible.");
@@ -77,4 +77,18 @@ export default function CustomerRoute() {
       </table>
     </div>
   );
+}
+export function CatchBoundary() {
+  const caught = useCatch();
+  const params = useParams();
+
+  if (caught.status === 404) {
+    return (
+      <div className="p-12 text-red-500">
+        No customer found with the ID of "{params.customerId}"
+      </div>
+    );
+  }
+
+  throw new Error(`Unexpected caught response with status: ${caught.status}`);
 }

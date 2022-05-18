@@ -6,6 +6,7 @@ import {
 } from "@remix-run/react";
 import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
+import { useSpinDelay } from "spin-delay";
 import { FilePlusIcon } from "~/components";
 import { requireUser } from "~/session.server";
 import { getCustomerListItems } from "~/models/customer.server";
@@ -33,6 +34,10 @@ export default function Customers() {
     const customerId = transition.location?.pathname.split("/").slice(-1)[0];
     loadingCustomer = customers.find((customer) => customer.id === customerId);
   }
+  const showSkeleton = useSpinDelay(Boolean(loadingCustomer), {
+    delay: 200,
+    minDuration: 300,
+  });
 
   return (
     <div className="flex overflow-hidden rounded-lg border border-gray-100">
@@ -73,7 +78,7 @@ export default function Customers() {
         </div>
       </div>
       <div className="w-1/2">
-        {loadingCustomer ? (
+        {loadingCustomer && showSkeleton ? (
           <CustomerSkeleton
             name={loadingCustomer.name}
             email={loadingCustomer.email}

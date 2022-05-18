@@ -1,19 +1,21 @@
 import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { NavLink, Outlet, useLoaderData, useMatches } from "@remix-run/react";
-import { getInvoiceListItems } from "~/models/invoice.server";
+import { getFirstCustomer } from "~/models/customer.server";
+import { getFirstInvoice } from "~/models/invoice.server";
 import { requireUser } from "~/session.server";
 
-type LoaderData = { firstInvoiceId?: string };
+type LoaderData = { firstInvoiceId?: string; firstCustomerId?: string };
 
 export const loader: LoaderFunction = async ({ request }) => {
   await requireUser(request);
-  const [firstInvoice] = await getInvoiceListItems();
-  if (!firstInvoice) {
-    return json<LoaderData>({});
-  }
+  const [firstInvoice, firstCustomer] = await Promise.all([
+    getFirstInvoice(),
+    getFirstCustomer(),
+  ]);
   return json<LoaderData>({
-    firstInvoiceId: firstInvoice.id,
+    firstInvoiceId: firstInvoice?.id,
+    firstCustomerId: firstCustomer?.id,
   });
 };
 
@@ -26,6 +28,9 @@ export default function SalesRoute() {
   const indexMatches = matches.some((m) => m.id === "routes/__app/sales/index");
   const invoiceMatches = matches.some(
     (m) => m.id === "routes/__app/sales/invoices"
+  );
+  const customerMatches = matches.some(
+    (m) => m.id === "routes/__app/sales/customers"
   );
   return (
     <div className="relative h-full p-10">
@@ -47,7 +52,15 @@ export default function SalesRoute() {
         >
           Invoices
         </NavLink>
-        <NavLink prefetch="intent" to="customers" className={linkClassName}>
+        <NavLink
+          prefetch="intent"
+          to={
+            data.firstCustomerId
+              ? `customers/${data.firstCustomerId}`
+              : "Customers"
+          }
+          className={linkClassName({ isActive: customerMatches })}
+        >
           Customers
         </NavLink>
         <NavLink prefetch="intent" to="deposits" className={linkClassName}>

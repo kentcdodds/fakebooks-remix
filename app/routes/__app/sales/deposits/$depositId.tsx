@@ -77,3 +77,9 @@ export default function DepositRoute() {
     </div>
   );
 }
+
+export function CatchBoundary() {
+  // no outlet is rendered if it doesn't match a deposit in the UI
+  // so this should never be called
+  return null;
+}

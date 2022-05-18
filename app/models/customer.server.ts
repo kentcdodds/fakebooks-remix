@@ -19,6 +19,10 @@ export async function searchCustomers(query: string) {
   });
 }
 
+export async function getFirstCustomer() {
+  return prisma.customer.findFirst();
+}
+
 export async function getCustomerListItems() {
   return prisma.customer.findMany({
     select: {
