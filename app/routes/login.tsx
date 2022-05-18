@@ -8,7 +8,7 @@ import { Form, useActionData, useSearchParams } from "@remix-run/react";
 import * as React from "react";
 
 import { createUserSession, getUserId } from "~/session.server";
-import { verifyLogin } from "~/models/user.server";
+import { createUser, getUserByEmail, verifyLogin } from "~/models/user.server";
 import { safeRedirect, validateEmail } from "~/utils";
 import { FullFakebooksLogo, inputClasses } from "~/components";
 
@@ -27,6 +27,7 @@ interface ActionData {
 
 export const action: ActionFunction = async ({ request }) => {
   const formData = await request.formData();
+  const intent = formData.get("intent");
   const email = formData.get("email");
   const password = formData.get("password");
   const redirectTo = safeRedirect(formData.get("redirectTo"), "/");
@@ -53,7 +54,29 @@ export const action: ActionFunction = async ({ request }) => {
     );
   }
 
-  const user = await verifyLogin(email, password);
+  let user: { id: string } | null;
+
+  switch (intent) {
+    case "signup": {
+      const existingUser = await getUserByEmail(email);
+      if (existingUser) {
+        return json<ActionData>(
+          { errors: { email: "A user already exists with this email" } },
+          { status: 400 }
+        );
+      }
+
+      user = await createUser(email, password);
+      break;
+    }
+    case "login": {
+      user = await verifyLogin(email, password);
+      break;
+    }
+    default: {
+      throw new Error(`Unknown intent: ${intent}`);
+    }
+  }
 
   if (!user) {
     return json<ActionData>(
