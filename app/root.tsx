@@ -69,7 +69,7 @@ function LogoutTimer() {
   const [status, setStatus] = useState<"idle" | "show-modal">("idle");
   const location = useLocation();
   const fetcher = useFetcher();
-  const logoutTime = 1000 * 60 * 5;
+  const logoutTime = 1000 * 60 * 60 * 24;
   const modalTime = logoutTime - 1000 * 60 * 2;
   const modalTimer = useRef<ReturnType<typeof setTimeout>>();
   const logoutTimer = useRef<ReturnType<typeof setTimeout>>();
@@ -128,16 +128,5 @@ function LogoutTimer() {
   );
 }
 
-export const unstable_shouldReload: ShouldReloadFunction = ({
-  // same params that go to `loader` and `action`
-  params,
-
-  // a possible form submission that caused this to be reloaded
-  submission,
-
-  // the next URL being used to render this page
-  url,
-
-  // the previous URL used to render this page
-  prevUrl,
-}) => url.pathname === "/logout" || url.pathname === "/login";
+export const unstable_shouldReload: ShouldReloadFunction = ({ submission }) =>
+  submission?.action === "/logout" || submission?.action === "/login";
