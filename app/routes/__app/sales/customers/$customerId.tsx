@@ -11,6 +11,9 @@ type LoaderData = {
 
 export const loader: LoaderFunction = async ({ request, params }) => {
   await requireUser(request);
+  await new Promise((resolve) =>
+    setTimeout(resolve, Math.random() * 3000 + 1500)
+  );
   const { customerId } = params;
   if (typeof customerId !== "string") {
     throw new Error("This should be unpossible.");
@@ -24,8 +27,7 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   });
 };
 
-const lineItemClassName =
-  "flex justify-between border-t border-gray-100 py-4 text-[14px] leading-[24px]";
+const lineItemClassName = "border-t border-gray-100 text-[14px] h-[56px]";
 
 export default function CustomerRoute() {
   const data = useLoaderData() as LoaderData;
@@ -40,30 +42,39 @@ export default function CustomerRoute() {
       </div>
       <div className="h-4" />
       <div className="text-m-h3 font-bold leading-8">Invoices</div>
-      {data.customer.invoiceDetails.map((invoiceDetails) => (
-        <div key={invoiceDetails.id} className={lineItemClassName}>
-          <Link
-            className="text-blue-600 underline"
-            to={`../../invoices/${invoiceDetails.id}`}
-          >
-            {invoiceDetails.number}
-          </Link>
-          <div
-            className={
-              "uppercase" +
-              " " +
-              (invoiceDetails.dueStatus === "paid"
-                ? "text-green-brand"
-                : invoiceDetails.dueStatus === "overdue"
-                ? "text-red-brand"
-                : "")
-            }
-          >
-            {invoiceDetails.dueStatusDisplay}
-          </div>
-          <div>{currencyFormatter.format(invoiceDetails.totalAmount)}</div>
-        </div>
-      ))}
+      <div className="h-4" />
+      <table className="w-full">
+        <tbody>
+          {data.customer.invoiceDetails.map((invoiceDetails) => (
+            <tr key={invoiceDetails.id} className={lineItemClassName}>
+              <td>
+                <Link
+                  className="text-blue-600 underline"
+                  to={`../../invoices/${invoiceDetails.id}`}
+                >
+                  {invoiceDetails.number}
+                </Link>
+              </td>
+              <td
+                className={
+                  "text-center uppercase" +
+                  " " +
+                  (invoiceDetails.dueStatus === "paid"
+                    ? "text-green-brand"
+                    : invoiceDetails.dueStatus === "overdue"
+                    ? "text-red-brand"
+                    : "")
+                }
+              >
+                {invoiceDetails.dueStatusDisplay}
+              </td>
+              <td className="text-right">
+                {currencyFormatter.format(invoiceDetails.totalAmount)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
     </div>
   );
 }

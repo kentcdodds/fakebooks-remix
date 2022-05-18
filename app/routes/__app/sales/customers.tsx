@@ -1,4 +1,9 @@
-import { NavLink, Outlet, useLoaderData } from "@remix-run/react";
+import {
+  NavLink,
+  Outlet,
+  useLoaderData,
+  useTransition,
+} from "@remix-run/react";
 import type { LoaderFunction } from "@remix-run/node";
 import { json } from "@remix-run/node";
 import { FilePlusIcon } from "~/components";
@@ -18,6 +23,17 @@ export const loader: LoaderFunction = async ({ request }) => {
 
 export default function Customers() {
   const { customers } = useLoaderData() as LoaderData;
+  const transition = useTransition();
+  const isLoadingCustomer =
+    transition.location?.pathname.includes("/customers/") &&
+    !transition.location?.pathname.endsWith("/new");
+
+  let loadingCustomer: LoaderData["customers"][number] | undefined;
+  if (isLoadingCustomer) {
+    const customerId = transition.location?.pathname.split("/").slice(-1)[0];
+    loadingCustomer = customers.find((customer) => customer.id === customerId);
+  }
+
   return (
     <div className="flex overflow-hidden rounded-lg border border-gray-100">
       <div className="w-1/2 border-r border-gray-100">
@@ -57,7 +73,38 @@ export default function Customers() {
         </div>
       </div>
       <div className="w-1/2">
-        <Outlet />
+        {loadingCustomer ? (
+          <CustomerSkeleton
+            name={loadingCustomer.name}
+            email={loadingCustomer.email}
+          />
+        ) : (
+          <Outlet />
+        )}
+      </div>
+    </div>
+  );
+}
+
+function CustomerSkeleton({ name, email }: { name: string; email: string }) {
+  return (
+    <div className="relative p-10">
+      <div className="text-[length:14px] font-bold leading-6">{email}</div>
+      <div className="text-[length:32px] font-bold leading-[40px]">{name}</div>
+      <div className="h-4" />
+      <div className="text-m-h3 font-bold leading-8">Invoices</div>
+      <div className="h-4" />
+      <div>
+        <div className="flex h-[56px] items-center border-t border-gray-100">
+          <div className="h-[14px] w-full animate-pulse rounded bg-gray-300">
+            &nbsp;
+          </div>
+        </div>
+        <div className="flex h-[56px] items-center border-t border-gray-100">
+          <div className="h-[14px] w-full animate-pulse rounded bg-gray-300">
+            &nbsp;
+          </div>
+        </div>
       </div>
     </div>
   );
