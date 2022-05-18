@@ -4,6 +4,7 @@ import { redirect, json } from "@remix-run/node";
 import { deleteDeposit, getDepositDetails } from "~/models/deposit.server";
 import { requireUser } from "~/session.server";
 import invariant from "tiny-invariant";
+import { TrashIcon } from "~/components";
 
 type LoaderData = {
   depositNote: string;
@@ -68,7 +69,7 @@ export default function DepositRoute() {
               name="intent"
               value="delete"
             >
-              🗑
+              <TrashIcon />
             </button>
           </Form>
         </div>

@@ -2,7 +2,7 @@ import * as React from "react";
 import { Link, useLoaderData, useOutlet, useParams } from "@remix-run/react";
 import type { LoaderFunction } from "@remix-run/server-runtime";
 import { json } from "@remix-run/server-runtime";
-import { CevronDown } from "~/components";
+import { CevronDownIcon } from "~/components";
 import { getDepositListItems } from "~/models/deposit.server";
 import { requireUser } from "~/session.server";
 import { currencyFormatter } from "~/utils";
@@ -44,7 +44,7 @@ export default function Deposits() {
                     to={d.id === depositId ? "." : d.id}
                     className="flex justify-center"
                   >
-                    <CevronDown
+                    <CevronDownIcon
                       className={clsx({
                         "-rotate-90": d.id === depositId,
                       })}
