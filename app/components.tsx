@@ -133,3 +133,31 @@ export function TrashIcon(props: React.SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
+
+export function LogoutIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg width={24} height={24} fill="none" {...props}>
+      <path
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
+        d="m15.75 8.75 3.5 3.25-3.5 3.25M19 12h-8.25M15.25 4.75h-8.5a2 2 0 0 0-2 2v10.5a2 2 0 0 0 2 2h8.5"
+      />
+    </svg>
+  );
+}
+
+export function UpRightArrowIcon(props: React.SVGProps<SVGSVGElement>) {
+  return (
+    <svg width={24} height={24} fill="none" {...props}>
+      <path
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth={1.5}
+        d="M17.25 15.25v-8.5h-8.5M17 7 6.75 17.25"
+      />
+    </svg>
+  );
+}

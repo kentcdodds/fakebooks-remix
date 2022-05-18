@@ -4,6 +4,7 @@ import type {
   MetaFunction,
 } from "@remix-run/node";
 import { json } from "@remix-run/node";
+import type { ShouldReloadFunction } from "@remix-run/react";
 import {
   Links,
   LiveReload,
@@ -126,3 +127,17 @@ function LogoutTimer() {
     </Dialog>
   );
 }
+
+export const unstable_shouldReload: ShouldReloadFunction = ({
+  // same params that go to `loader` and `action`
+  params,
+
+  // a possible form submission that caused this to be reloaded
+  submission,
+
+  // the next URL being used to render this page
+  url,
+
+  // the previous URL used to render this page
+  prevUrl,
+}) => url.pathname === "/logout" || url.pathname === "/login";

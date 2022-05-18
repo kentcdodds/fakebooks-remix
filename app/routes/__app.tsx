@@ -1,5 +1,5 @@
-import { Link, NavLink, Outlet } from "@remix-run/react";
-import { FullFakebooksLogo } from "~/components";
+import { Form, Link, NavLink, Outlet } from "@remix-run/react";
+import { FullFakebooksLogo, LogoutIcon, UpRightArrowIcon } from "~/components";
 
 export default function AppRoute() {
   return (
@@ -18,10 +18,20 @@ export default function AppRoute() {
             <NavItem to="reports">Reports</NavItem>
             <a
               href="https://github.com/kentcdodds/fakebooks-remix"
+              className="my-1 flex gap-1 py-1 px-2 pr-16 text-[length:14px]"
+            >
+              GitHub <UpRightArrowIcon />
+            </a>
+
+            <Form
+              method="post"
+              action="/logout"
               className="my-1 py-1 px-2 pr-16 text-[length:14px]"
             >
-              GitHub ↗️
-            </a>
+              <button type="submit" className="flex gap-1 font-bold">
+                Logout <LogoutIcon />
+              </button>
+            </Form>
           </div>
         </div>
       </div>
