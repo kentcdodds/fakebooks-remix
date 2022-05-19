@@ -5,6 +5,7 @@ import {
   useCatch,
   useFetcher,
   useLoaderData,
+  useLocation,
   useParams,
 } from "@remix-run/react";
 import { inputClasses, LabelText, submitButtonClasses } from "~/components";
@@ -63,6 +64,28 @@ export const loader: LoaderFunction = async ({ request, params }) => {
   });
 };
 
+type ActionData = {
+  errors: {
+    amount: string | null;
+    depositDate: string | null;
+  };
+};
+
+function validateAmount(amount: number) {
+  if (amount <= 0) return "Must be greater than 0";
+  if (Number(amount.toFixed(2)) !== amount) {
+    return "Must only have two decimal places";
+  }
+  return null;
+}
+
+function validateDepositDate(date: Date) {
+  if (Number.isNaN(date.getTime())) {
+    return "Please enter a valid date";
+  }
+  return null;
+}
+
 export const action: ActionFunction = async ({ request, params }) => {
   await requireUser(request);
   const { invoiceId } = params;
@@ -81,6 +104,18 @@ export const action: ActionFunction = async ({ request, params }) => {
       invariant(typeof depositDateString === "string", "dueDate is required");
       invariant(typeof note === "string", "dueDate is required");
       const depositDate = parseDate(depositDateString);
+
+      const errors: ActionData["errors"] = {
+        amount: validateAmount(amount),
+        depositDate: validateDepositDate(depositDate),
+      };
+      const hasErrors = Object.values(errors).some(
+        (errorMessage) => errorMessage
+      );
+      if (hasErrors) {
+        return json<ActionData>({ errors });
+      }
+
       await createDeposit({ invoiceId, amount, note, depositDate });
       return new Response("ok");
     }
@@ -94,8 +129,9 @@ const lineItemClassName =
   "flex justify-between border-t border-gray-100 py-4 text-[14px] leading-[24px]";
 export default function InvoiceRoute() {
   const data = useLoaderData() as LoaderData;
+  const location = useLocation();
   return (
-    <div className="relative p-10">
+    <div className="relative p-10" key={location.key}>
       <Link
         to={`../../customers/${data.customerId}`}
         className="text-[length:14px] font-bold leading-6 text-blue-600 underline"
@@ -157,27 +193,40 @@ function Deposits() {
 
   if (newDepositFetcher.submission) {
     const amount = Number(newDepositFetcher.submission.formData.get("amount"));
-    const depositDate =
+    const depositDateVal =
       newDepositFetcher.submission.formData.get("depositDate");
-    if (!Number.isNaN(amount) && typeof depositDate === "string") {
+    const depositDate =
+      typeof depositDateVal === "string" ? parseDate(depositDateVal) : null;
+    if (
+      !validateAmount(amount) &&
+      depositDate &&
+      !validateDepositDate(depositDate)
+    ) {
       deposits.push({
         id: "new",
         amount,
-        depositDateFormatted: parseDate(depositDate).toLocaleDateString(),
+        depositDateFormatted: depositDate.toLocaleDateString(),
       });
     }
   }
 
+  const errors = newDepositFetcher.data?.errors as
+    | ActionData["errors"]
+    | undefined;
+
   useEffect(() => {
     if (!formRef.current) return;
-    if (newDepositFetcher.type === "done") {
-      const formEl = formRef.current as DepositFormElement;
-      if (document.activeElement === formEl.elements.intent) {
-        formEl.reset();
-        formEl.elements.amount?.focus();
-      }
+    if (newDepositFetcher.type !== "done") return;
+    const formEl = formRef.current as DepositFormElement;
+    if (errors?.amount) {
+      formEl.elements.amount?.focus();
+    } else if (errors?.depositDate) {
+      formEl.elements.depositDate?.focus();
+    } else if (document.activeElement === formEl.elements.intent) {
+      formEl.reset();
+      formEl.elements.amount?.focus();
     }
-  }, [newDepositFetcher.type]);
+  }, [newDepositFetcher.type, errors]);
 
   return (
     <div>
@@ -201,9 +250,19 @@ function Deposits() {
         method="post"
         className="grid grid-cols-1 gap-x-4 gap-y-2 lg:grid-cols-2"
         ref={formRef}
+        noValidate
       >
         <div className="min-w-[100px]">
-          <label htmlFor="depositAmount">Amount</label>
+          <div className="flex flex-wrap items-center gap-1">
+            <LabelText>
+              <label htmlFor="depositAmount">Amount</label>
+            </LabelText>
+            {errors?.amount ? (
+              <em id="amount-error" className="text-d-p-xs text-red-600">
+                {errors.amount}
+              </em>
+            ) : null}
+          </div>
           <input
             id="depositAmount"
             name="amount"
@@ -212,21 +271,38 @@ function Deposits() {
             min="0.01"
             step="any"
             required
+            aria-invalid={Boolean(errors?.amount) || undefined}
+            aria-errormessage={errors?.amount ? "amount-error" : undefined}
           />
         </div>
         <div>
-          <label htmlFor="depositDate">Date</label>
+          <div className="flex flex-wrap items-center gap-1">
+            <LabelText>
+              <label htmlFor="depositDate">Date</label>
+            </LabelText>
+            {errors?.depositDate ? (
+              <em id="depositDate-error" className="text-d-p-xs text-red-600">
+                {errors.depositDate}
+              </em>
+            ) : null}
+          </div>
           <input
             id="depositDate"
             name="depositDate"
             type="date"
             className={`${inputClasses} h-[34px]`}
             required
+            aria-invalid={Boolean(errors?.depositDate) || undefined}
+            aria-errormessage={
+              errors?.depositDate ? "depositDate-error" : undefined
+            }
           />
         </div>
         <div className="grid grid-cols-1 gap-4 lg:col-span-2 lg:flex">
           <div className="flex-1">
-            <label htmlFor="depositNote">Note</label>
+            <LabelText>
+              <label htmlFor="depositNote">Note</label>
+            </LabelText>
             <input
               id="depositNote"
               name="note"
@@ -246,21 +322,6 @@ function Deposits() {
           </div>
         </div>
       </newDepositFetcher.Form>
-    </div>
-  );
-}
-
-export function ErrorBoundary({ error }: { error: Error }) {
-  console.error(error);
-
-  return (
-    <div className="absolute inset-0 flex justify-center bg-red-100 pt-4">
-      <div className="text-center text-red-brand">
-        <div className="text-[14px] font-bold">Oh snap!</div>
-        <div className="px-2 text-[12px]">
-          There was a problem loading this invoice
-        </div>
-      </div>
     </div>
   );
 }
@@ -296,4 +357,17 @@ export function CatchBoundary() {
   }
 
   throw new Error(`Unexpected caught response with status: ${caught.status}`);
+}
+
+export function ErrorBoundary({ error }: { error: Error }) {
+  console.error(error);
+
+  return (
+    <div className="absolute inset-0 flex justify-center bg-red-100 pt-4">
+      <div className="text-center text-red-brand">
+        <div className="text-[14px] font-bold">Oh snap!</div>
+        <div className="px-2 text-[12px]">There was a problem. Sorry.</div>
+      </div>
+    </div>
+  );
 }

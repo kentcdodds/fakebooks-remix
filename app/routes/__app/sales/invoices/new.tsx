@@ -22,15 +22,17 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 type ActionData = {
-  customerId: string | null;
-  dueDate: string | null;
-  lineItems: Record<
-    string,
-    {
-      quantity: string | null;
-      unitPrice: string | null;
-    }
-  >;
+  errors: {
+    customerId: string | null;
+    dueDate: string | null;
+    lineItems: Record<
+      string,
+      {
+        quantity: string | null;
+        unitPrice: string | null;
+      }
+    >;
+  };
 };
 
 function validateCustomerId(customerId: string) {
@@ -48,8 +50,8 @@ function validateDueDate(date: Date) {
 
 function validateLineItemQuantity(quantity: number) {
   if (quantity <= 0) return "Must be greater than 0";
-  if (Number(quantity.toFixed(2)) !== quantity) {
-    return "Must only have two decimal places";
+  if (Number(quantity.toFixed(0)) !== quantity) {
+    return "Fractional quantities are not allowed";
   }
   return null;
 }
@@ -90,7 +92,7 @@ export const action: ActionFunction = async ({ request }) => {
         lineItems.push({ quantity, unitPrice, description });
       }
 
-      const errors: ActionData = {
+      const errors: ActionData["errors"] = {
         customerId: validateCustomerId(customerId),
         dueDate: validateDueDate(dueDate),
         lineItems: lineItems.reduce((acc, lineItem, index) => {
@@ -101,7 +103,7 @@ export const action: ActionFunction = async ({ request }) => {
             unitPrice: validateLineItemUnitPrice(lineItem.unitPrice),
           };
           return acc;
-        }, {} as ActionData["lineItems"]),
+        }, {} as ActionData["errors"]["lineItems"]),
       };
 
       const customerIdHasError = errors.customerId !== null;
@@ -112,7 +114,7 @@ export const action: ActionFunction = async ({ request }) => {
       const hasErrors =
         dueDateHasError || customerIdHasError || lineItemsHaveErrors;
       if (hasErrors) {
-        return json<ActionData>(errors);
+        return json<ActionData>({ errors });
       }
 
       const invoice = await createInvoice({ dueDate, customerId, lineItems });
@@ -129,15 +131,15 @@ export default function NewInvoice() {
     <div className="relative p-10">
       <h2 className="mb-4 font-display">New Invoice</h2>
       <Form method="post" className="flex flex-col gap-4">
-        <CustomerCombobox error={actionData?.customerId} />
+        <CustomerCombobox error={actionData?.errors.customerId} />
         <div>
           <div className="flex flex-wrap items-center gap-1">
             <label htmlFor="dueDate">
               <LabelText>Due Date</LabelText>
             </label>
-            {actionData?.dueDate ? (
+            {actionData?.errors.dueDate ? (
               <em id="dueDate-error" className="text-d-p-xs text-red-600">
-                {actionData.dueDate}
+                {actionData.errors.dueDate}
               </em>
             ) : null}
           </div>
@@ -146,9 +148,9 @@ export default function NewInvoice() {
             name="dueDate"
             className={inputClasses}
             type="date"
-            aria-invalid={Boolean(actionData?.dueDate) || undefined}
+            aria-invalid={Boolean(actionData?.errors.dueDate) || undefined}
             aria-errormessage={
-              actionData?.dueDate ? "dueDate-error" : undefined
+              actionData?.errors.dueDate ? "dueDate-error" : undefined
             }
           />
         </div>
@@ -210,7 +212,7 @@ function LineItemFormFields({
   onRemoveClick: () => void;
 }) {
   const actionData = useActionData() as ActionData | undefined;
-  const errors = actionData?.lineItems[lineItemClientId];
+  const errors = actionData?.errors.lineItems[lineItemClientId];
   return (
     <fieldset key={lineItemClientId} className="border-b-2 py-2">
       <div className="flex gap-2">
@@ -290,10 +292,11 @@ export function ErrorBoundary({ error }: { error: Error }) {
   console.error(error);
 
   return (
-    <div>
-      Whoops. Sorry:
-      <br />
-      <pre>{error.message}</pre>
+    <div className="absolute inset-0 flex justify-center bg-red-100 pt-4">
+      <div className="text-center text-red-brand">
+        <div className="text-[14px] font-bold">Oh snap!</div>
+        <div className="px-2 text-[12px]">There was a problem. Sorry.</div>
+      </div>
     </div>
   );
 }

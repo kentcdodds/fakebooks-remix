@@ -23,8 +23,15 @@ export default function Deposits() {
   const data = useLoaderData() as LoaderData;
   const outlet = useOutlet();
   const { depositId } = useParams();
+  const depositNotFound =
+    depositId && data.deposits.every((d) => d.id !== depositId);
   return (
     <div className="overflow-hidden rounded-lg border border-gray-200">
+      {depositNotFound ? (
+        <div className="p-12 text-red-500">
+          No deposit found with the ID of "{depositId}"
+        </div>
+      ) : null}
       <table className="w-full">
         <thead className="border-b-2 border-gray-200">
           <tr>
