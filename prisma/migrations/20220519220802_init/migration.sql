@@ -41,6 +41,7 @@ CREATE TABLE "Deposit" (
     "updatedAt" DATETIME NOT NULL,
     "amount" REAL NOT NULL,
     "depositDate" DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "note" TEXT NOT NULL,
     "invoiceId" TEXT NOT NULL,
     CONSTRAINT "Deposit_invoiceId_fkey" FOREIGN KEY ("invoiceId") REFERENCES "Invoice" ("id") ON DELETE CASCADE ON UPDATE CASCADE
 );
