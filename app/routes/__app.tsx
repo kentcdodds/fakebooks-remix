@@ -1,14 +1,34 @@
-import { Form, Link, NavLink, Outlet } from "@remix-run/react";
-import { FullFakebooksLogo, LogoutIcon, UpRightArrowIcon } from "~/components";
+import { Form, Link, NavLink, Outlet, useTransition } from "@remix-run/react";
+import clsx from "clsx";
+import { useSpinDelay } from "spin-delay";
+import {
+  FullFakebooksLogo,
+  LogoutIcon,
+  Spinner,
+  UpRightArrowIcon,
+} from "~/components";
 
 export default function AppRoute() {
+  const transition = useTransition();
+  const showSpinner = useSpinDelay(transition.state !== "idle", {
+    delay: 200,
+    minDuration: 300,
+  });
   return (
     <div className="relative flex h-full rounded-lg bg-white text-gray-600">
       <div className="border-r border-gray-100 bg-gray-50">
         <div className="p-4">
-          <Link to=".">
-            <FullFakebooksLogo size="sm" position="left" />
-          </Link>
+          <div className="flex flex-wrap items-center gap-1">
+            <Link to=".">
+              <FullFakebooksLogo size="sm" position="left" />
+            </Link>
+            <Spinner
+              className={clsx("animate-spin transition-opacity", {
+                "opacity-0": !showSpinner,
+                "opacity-100": showSpinner,
+              })}
+            />
+          </div>
           <div className="h-7" />
           <div className="flex flex-col font-bold text-gray-800">
             <NavItem to="dashboard">Dashboard</NavItem>
