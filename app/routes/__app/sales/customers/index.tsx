@@ -1,11 +1,11 @@
 import type { LoaderFunction } from "@remix-run/node";
 import { json, redirect } from "@remix-run/node";
-import { getCustomerListItems } from "~/models/customer.server";
+import { getFirstCustomer } from "~/models/customer.server";
 import { requireUser } from "~/session.server";
 
 export const loader: LoaderFunction = async ({ request }) => {
   await requireUser(request);
-  const [firstCustomer] = await getCustomerListItems();
+  const firstCustomer = await getFirstCustomer();
   if (!firstCustomer) {
     return json({});
   }
@@ -13,5 +13,5 @@ export const loader: LoaderFunction = async ({ request }) => {
 };
 
 export default function InvoiceIndex() {
-  return <div>You don't have any customers 😭</div>;
+  return <div className="p-10">You don't have any customers 😭</div>;
 }

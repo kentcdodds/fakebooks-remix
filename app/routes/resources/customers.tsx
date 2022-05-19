@@ -33,7 +33,7 @@ export const action: ActionFunction = async ({ request }) => {
 
 type Customer = CustomerSearchResult["customers"][number];
 
-export function CustomerCombobox() {
+export function CustomerCombobox({ error }: { error?: string | null }) {
   const customerFetcher = useFetcher();
   const id = useId();
   const customers =
@@ -73,9 +73,16 @@ export function CustomerCombobox() {
         type="hidden"
         value={selectedCustomer?.id ?? ""}
       />
-      <label {...cb.getLabelProps()}>
-        <LabelText>Customer</LabelText>
-      </label>
+      <div className="flex flex-wrap items-center gap-1">
+        <label {...cb.getLabelProps()}>
+          <LabelText>Customer</LabelText>
+        </label>
+        {error ? (
+          <em id="customer-error" className="text-d-p-xs text-red-600">
+            {error}
+          </em>
+        ) : null}
+      </div>
       <div {...cb.getComboboxProps()}>
         <input
           {...cb.getInputProps({
@@ -83,6 +90,8 @@ export function CustomerCombobox() {
               "rounded-t rounded-b-0": displayMenu,
               rounded: !displayMenu,
             }),
+            "aria-invalid": Boolean(error) || undefined,
+            "aria-errormessage": error ? "customer-error" : undefined,
           })}
         />
       </div>

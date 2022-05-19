@@ -14,6 +14,7 @@ module.exports = {
     fontSize: {
       // names come from the figma file
       // desktop paragraph small -> d-p-s
+      "d-p-xs": ["12px", "18px"],
       "d-p-sm": ["16px", "24px"],
       "d-p-lg": ["20px", "32px"],
       "d-h3": ["30px", "32px"],
@@ -22,6 +23,7 @@ module.exports = {
       "d-j": ["72px", "64px"],
 
       // mobile paragraph small -> d-m-s
+      "m-p-xs": ["12px", "18px"],
       "m-p-sm": ["14px", "24px"],
       "m-p-lg": ["18px", "32px"],
       "m-h3": ["20px", "24px"],
